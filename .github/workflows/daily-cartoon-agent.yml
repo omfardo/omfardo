@@ -1,0 +1,76 @@
+name: Daily Omfardo Cartoon Agent
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * *"
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set report filename
+        run: echo "REPORT_DATE=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
+
+      - name: Run agent
+        run: |
+          python3 agent/omfardo_daily_cartoon_agent.py --out reports/omfardo_daily_${REPORT_DATE}.md --max-headlines 20
+
+      - name: Commit daily report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/*.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: daily omfardo cartoon report (${REPORT_DATE})"
+          git push
+
+      - name: Create daily issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = `reports/omfardo_daily_${process.env.REPORT_DATE}.md`;
+            const body = fs.readFileSync(path, 'utf8');
+            const title = `Omfardo Daily Cartoon Report - ${process.env.REPORT_DATE}`;
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            const exists = issues.find((i) => i.title === title);
+            if (exists) {
+              core.info(`Issue already exists: #${exists.number}`);
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+              });
+              core.info('Daily issue created');
+            }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: omfardo-daily-report
+          path: reports/*.md
