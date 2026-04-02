@@ -48,3 +48,16 @@ Bu sayede tablette sadece GitHub uygulaması/Safari üzerinden çıktıyı okuyu
 
 
 Not: Workflow artık her gün raporu GitHub'da otomatik **Issue** olarak da açar; böylece tablette direkt Issues sekmesinden okuyabilirsin.
+
+
+## Tek komutla GitHub kurulum (en kolay)
+
+Aşağıdaki komut remote ayarını yapar ve `work` branch'ini GitHub'a push eder:
+
+```bash
+bash scripts/setup_github_easy.sh omfardo/omfardo-ajan
+```
+
+Bittikten sonra tablette direkt şu linkleri aç:
+- `https://github.com/omfardo/omfardo-ajan/actions`
+- `https://github.com/omfardo/omfardo-ajan/issues`
