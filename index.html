@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Omfardo Karikatür Ajanı</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#111; color:#f2f2f2; margin:0; }
+    .wrap { max-width: 850px; margin: 0 auto; padding: 20px; }
+    h1 { font-size: 28px; }
+    button { background:#ff8c00; color:#111; border:0; padding:12px 18px; border-radius:10px; font-weight:700; }
+    .card { background:#1d1d1d; border:1px solid #2a2a2a; border-radius:12px; padding:14px; margin-top:14px; }
+    .muted { color:#aaa; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>✦ Omfardo Karikatür Ajanı</h1>
+    <p class="muted">Düğmeye bas: dünya gündemi + 4 hızlı karikatür eskizi.</p>
+    <button id="runBtn">Gündemi Tara & Esprile</button>
+    <p id="status" class="muted"></p>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('runBtn');
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    function esc(s){ return s.replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    btn.addEventListener('click', async () => {
+      status.textContent = 'Gündem taranıyor...';
+      result.innerHTML = '';
+      try {
+        const r = await fetch('/api/generate');
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Hata');
+
+        let html = `<div class="card"><strong>Tarih:</strong> ${esc(data.date)}</div>`;
+        html += `<div class="card"><h3>Gündem Briefing</h3><ol>${data.briefing.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`;
+        html += data.sketches.map(s => `
+          <div class="card">
+            <h3>Eskiz ${s.id}</h3>
+            <p><strong>Konu:</strong> ${esc(s.konu)}</p>
+            <p><strong>Çatışma:</strong> ${esc(s.catisma)}</p>
+            <p><strong>Sürpriz:</strong> ${esc(s.surpriz)}</p>
+            <p><strong>Punchline:</strong> ${esc(s.punchline)}</p>
+            <p><strong>Kompozisyon:</strong> ${esc(s.kompozisyon)}</p>
+          </div>`).join('');
+
+        result.innerHTML = html;
+        status.textContent = 'Hazır.';
+      } catch (e) {
+        status.textContent = 'Hata: ' + e.message;
+      }
+    });
+  </script>
+</body>
+</html>
