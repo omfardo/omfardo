@@ -61,3 +61,14 @@ bash scripts/setup_github_easy.sh omfardo/omfardo-ajan
 Bittikten sonra tablette direkt şu linkleri aç:
 - `https://github.com/omfardo/omfardo-ajan/actions`
 - `https://github.com/omfardo/omfardo-ajan/issues`
+
+
+## Vercel web sürümü
+
+Bu repo artık `index.html` + `api/generate.js` ile Vercel'de web arayüzü olarak çalışır.
+
+- Buton: **Gündemi Tara & Esprile**
+- API: `GET /api/generate`
+- Çıktı: güncel briefing + 4 eskiz kartı
+
+Vercel'de deploy sonrası doğrudan URL'den tabletle kullanabilirsin.
